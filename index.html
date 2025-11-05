@@ -13,7 +13,6 @@
       position: relative;
     }
 
-    /* Fireworks canvas */
     canvas#sky {
       position: fixed;
       inset: 0;
@@ -22,7 +21,6 @@
       z-index: 0;
     }
 
-    /* Center image */
     .center-image {
       position: fixed;
       top: 50%;
@@ -36,7 +34,7 @@
     }
 
     .center-image img {
-      width: 280px;
+      width: clamp(180px, 50vw, 300px);
       height: auto;
       border-radius: 16px;
       display: block;
@@ -47,7 +45,6 @@
       to { box-shadow: 0 0 45px rgba(255,200,80,0.8); }
     }
 
-    /* Bottom message */
     .footer {
       position: fixed;
       left: 0;
@@ -58,23 +55,24 @@
       pointer-events: none;
       user-select: none;
     }
+
     .message {
       display: inline-block;
       padding: 12px 24px;
       background: rgba(255,255,255,0.08);
       border-radius: 10px;
-      font-size: clamp(18px, 3.6vw, 40px);
+      font-size: clamp(16px, 4.5vw, 38px);
       font-weight: 700;
       color: #fff;
       box-shadow: 0 0 20px rgba(255,215,0,0.4);
       animation: textGlow 1.5s infinite alternate;
     }
+
     @keyframes textGlow {
       from { text-shadow: 0 0 8px #ffcc00, 0 0 20px #ffaa00; }
       to { text-shadow: 0 0 20px #ffee99, 0 0 40px #ffcc00; }
     }
 
-    /* Blinking border lights */
     .border-lights {
       position: fixed;
       inset: 0;
@@ -84,8 +82,8 @@
 
     .light {
       position: absolute;
-      width: 10px;
-      height: 10px;
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
       background: radial-gradient(circle, #ffd86b 0%, #ffb300 60%, transparent 100%);
       animation: blink 1.2s infinite;
@@ -101,7 +99,6 @@
 <body>
   <canvas id="sky" aria-hidden="true"></canvas>
 
-  <!-- Center image -->
   <div class="center-image">
     <img src="https://www.dropbox.com/scl/fi/i3siqnwyekz8me4rqv174/1000171504-01.jpeg?rlkey=5yxosxewim2irvuhiq4vlz8kb&st=faljlvc6&raw=1" alt="Birthday Photo">
   </div>
@@ -115,17 +112,16 @@
   <script>
     // === Border Lights ===
     const lightsContainer = document.getElementById('lights');
-    const step = 60; // spacing between lights
+    const step = 60;
     const w = window.innerWidth;
     const h = window.innerHeight;
-    let delay = 0;
     for (let x = 0; x < w; x += step) {
-      makeLight(x, 0); // top
-      makeLight(x, h - 10); // bottom
+      makeLight(x, 0);
+      makeLight(x, h - 10);
     }
     for (let y = 0; y < h; y += step) {
-      makeLight(0, y); // left
-      makeLight(w - 10, y); // right
+      makeLight(0, y);
+      makeLight(w - 10, y);
     }
     function makeLight(x, y) {
       const light = document.createElement('div');
@@ -145,7 +141,6 @@
       let particles = [];
       const gravity = 0.06;
       const friction = 0.99;
-      const rocketSpawnInterval = 700;
       const maxRockets = 8;
 
       const COLORS = [
@@ -173,6 +168,7 @@
         this.fuse = rand(40, 70);
         this.trail = [];
       }
+
       Rocket.prototype.step = function() {
         this.age++;
         this.trail.push({ x: this.x, y: this.y });
@@ -182,7 +178,9 @@
         this.vy *= 0.999;
         this.x += this.vx;
         this.y += this.vy;
-        if (this.age > this.fuse || this.vy > 1.8 || this.y < H * 0.2) {
+        // Adjust explosion height for mobile (go higher)
+        const minHeight = innerHeight < 700 ? 0.1 : 0.2;
+        if (this.age > this.fuse || this.vy > 1.8 || this.y < H * minHeight) {
           explode(this.x, this.y, this.color);
           return false;
         }
@@ -199,6 +197,7 @@
         this.alpha = 1;
         this.decay = rand(0.005, 0.02);
       }
+
       Particle.prototype.step = function() {
         this.age++;
         this.vx *= friction;
@@ -217,8 +216,7 @@
           const speed = rand(1.6, 6.5);
           const vx = Math.cos(angle) * speed;
           const vy = Math.sin(angle) * speed;
-          const particleColor = color;
-          particles.push(new Particle(x, y, vx, vy, particleColor, rand(50, 110), rand(1.2, 3.6)));
+          particles.push(new Particle(x, y, vx, vy, color, rand(50, 110), rand(1.2, 3.6)));
         }
       }
 
@@ -262,7 +260,7 @@
         const startX = x || rand(innerWidth * 0.12, innerWidth * 0.88);
         const startY = innerHeight + rand(10, 40);
         const vx = rand(-1.5, 1.5);
-        const vy = rand(-7.5, -10.5);
+        const vy = rand(-8.5, -12); // higher launch for mobile
         rockets.push(new Rocket(startX, startY, vx, vy));
       }
 
@@ -288,5 +286,3 @@
   </script>
 </body>
 </html>
-
-
